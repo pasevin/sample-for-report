@@ -16,12 +16,19 @@ contract MyToken is ERC1155, ERC1155Supply {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
     }
 
-    // Test function with the reentrancy vulnerability
-    function testReentrancy(address _token, uint256 _amount) public {
-        // Transfer tokens to this contract
-        ERC1155(_token).safeTransferFrom(msg.sender, address(this), 0, _amount, "");
+    function reentrancyAttack() public {
+        // Call the function that is vulnerable to reentrancy
+        vulnerableFunction();
 
-        // Transfer tokens back to the sender
-        ERC1155(_token).safeTransferFrom(address(this), msg.sender, 0, _amount, "");
+        if (address(this).balance > 0) {
+            // Recursive call
+            reentrancyAttack();
+        }
+    }
+
+    function vulnerableFunction() public payable {
+        require(msg.value >= 1 ether, "Insufficient ether");
+        (bool success, ) = msg.sender.call{value: 1 ether}("");
+        require(success, "Transfer failed.");
     }
 }
