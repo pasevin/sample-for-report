@@ -15,4 +15,13 @@ contract MyToken is ERC1155, ERC1155Supply {
     {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
     }
+
+    // Test function with the reentrancy vulnerability
+    function testReentrancy(address _token, uint256 _amount) public {
+        // Transfer tokens to this contract
+        ERC1155(_token).safeTransferFrom(msg.sender, address(this), 0, _amount, "");
+
+        // Transfer tokens back to the sender
+        ERC1155(_token).safeTransferFrom(address(this), msg.sender, 0, _amount, "");
+    }
 }
