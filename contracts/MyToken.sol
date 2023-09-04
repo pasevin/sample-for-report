@@ -15,4 +15,20 @@ contract MyToken is ERC1155, ERC1155Supply {
     {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
     }
+
+    function reentrancyAttack() public {
+        // Call the function that is vulnerable to reentrancy
+        vulnerableFunction();
+
+        if (address(this).balance > 0) {
+            // Recursive call
+            reentrancyAttack();
+        }
+    }
+
+    function vulnerableFunction() public payable {
+        require(msg.value >= 1 ether, "Insufficient ether");
+        (bool success, ) = msg.sender.call{value: 1 ether}("");
+        require(success, "Transfer failed.");
+    }
 }
